@@ -1,7 +1,6 @@
 'use strict';
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
-const PSD = require('psd');
-const path = require('path');
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -83,16 +82,20 @@ const registerIPC = function () {
   });
 
   ipcMain.on('save-file', function (event, options) {
-    let paths = options.filePath;
-    let savePath = options.savePath;
-    paths.map(item => {
-      let arr = item.split('\\');
-      let fileName = arr[arr.length - 1].split('.')[0];
-      PSD.open(item).then(function (psd) {
-        return psd.image.saveAsPng(path.join(savePath, `${fileName}.png`));
-      }).then(function () {
-        event.sender.send('finish', item);
-      });
-    });
+    // let paths = options.filePath;
+    // let savePath = options.savePath;
+    // paths.map(item => {
+    //   let arr = item.split('\\');
+    //   let fileName = arr[arr.length - 1].split('.')[0];
+    //   PSD.open(item).then(function (psd) {
+    //     return psd.image.saveAsPng(path.join(savePath, `${fileName}.png`));
+    //   }).then(function () {
+    //     event.sender.send('finish', item);
+    //   });
+    // });
+  });
+
+  ipcMain.on('open-file', function (event, path) {
+    shell.openItem(path);
   });
 };

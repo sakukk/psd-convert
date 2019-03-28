@@ -9,7 +9,9 @@
           </li>
           <li>
             <i-button class="alt" @click="openSaveDialog">保存路径</i-button>
-            <span class="desc">{{savePath}}</span>
+            <span class="desc">
+              <a href="#" @click="openFilePath">{{savePath}}</a>
+            </span>
           </li>
           <li>
             <i-button class="alt" type="primary" :disabled="!btnEnable" @click="producePsd">生成</i-button>
@@ -37,6 +39,8 @@
 </template>
 
 <script>
+  import {generatePng2} from '../psd';
+  const path = require('path');
   export default {
     name: 'landing-page',
     data () {
@@ -66,13 +70,22 @@
       producePsd () {
         this.finishPath = [];
         this.finishCount = 0;
-        this.$electron.ipcRenderer.send('save-file', {
-          savePath: this.savePath,
-          filePath: this.filePaths
+        let tasks = [];
+        this.$Spin.show();
+        this.filePaths.map(item => {
+          let arr = item.split('\\');
+          let fileName = arr[arr.length - 1].split('.')[0];
+          let t = generatePng2(item).then(psd => {
+            return psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
+          }).then(() => {
+            this.finishCount += 1;
+            this.finishPath.push(item);
+          });
+          tasks.push(t);
         });
-        this.$electron.ipcRenderer.on('finish', (event, path) => {
-          this.finishCount += 1;
-          this.finishPath.push(path);
+
+        Promise.all(tasks).then(() => {
+          this.$Spin.hide();
         });
       },
       openSaveDialog () {
@@ -86,6 +99,9 @@
       },
       terminate () {
         //
+      },
+      openFilePath () {
+        this.$electron.ipcRenderer.send('open-file', this.savePath);
       }
     },
     created () {
