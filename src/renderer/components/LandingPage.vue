@@ -4,18 +4,20 @@
       <Content :style="{margin: '20px', background: '#fff', minHeight: '100%'}">
         <ul class="btn-ul">
           <li>
-            <i-button class="alt" @click="openDialog">选择文件夹</i-button>
+            <i-button class="alt" :loading="btnloading" @click="openDialog">选择文件夹</i-button>
             <span class="desc">选择了{{fileNum}}个文件</span>
           </li>
           <li>
-            <i-button class="alt" @click="openSaveDialog">保存路径</i-button>
+            <i-button class="alt" :loading="btnloading" @click="openSaveDialog">保存路径</i-button>
             <span class="desc">
               <a href="#" @click="openFilePath">{{savePath}}</a>
             </span>
           </li>
           <li>
-            <i-button class="alt" type="primary" :disabled="!btnEnable" @click="producePsd">生成</i-button>
-            <span></span>
+            <i-button class="alt" type="primary"
+                      :loading="btnloading"
+                      :disabled="!btnEnable" @click="producePsd">生成</i-button>
+<!--            <span class="desc">{{finishCount}}</span>-->
           </li>
           <!--<li>-->
             <!--<i-button class="alt" disabled type="error" @click="terminate">停止</i-button>-->
@@ -48,7 +50,8 @@
         filePaths: [],
         savePath: localStorage.getItem('savePath') || '',
         finishCount: 0,
-        finishPath: []
+        finishPath: [],
+        btnloading: false
       };
     },
     methods: {
@@ -60,7 +63,7 @@
           properties: ['openFile', 'multiSelections'],
           filters: [{
             name: 'Images',
-            extensions: ['psd']
+            extensions: ['*.psd']
           }]
         });
         this.$electron.ipcRenderer.once('selectItems', (event, path) => {
@@ -72,20 +75,22 @@
         this.finishCount = 0;
         let tasks = [];
         this.$Spin.show();
+        this.btnloading = true;
         this.filePaths.map(item => {
-          let arr = item.split('\\');
+          let arr = item.split('/');
           let fileName = arr[arr.length - 1].split('.')[0];
           let t = generatePng2(item).then(psd => {
-            return psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
-          }).then(() => {
             this.finishCount += 1;
             this.finishPath.push(item);
+            return psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
+          }).then(() => {
           });
           tasks.push(t);
         });
 
         Promise.all(tasks).then(() => {
           this.$Spin.hide();
+          this.btnloading = false;
         });
       },
       openSaveDialog () {
