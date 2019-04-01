@@ -51,7 +51,8 @@
         savePath: localStorage.getItem('savePath') || '',
         finishCount: 0,
         finishPath: [],
-        btnloading: false
+        btnloading: false,
+        platform: require('os').platform()
       };
     },
     methods: {
@@ -77,9 +78,10 @@
         this.$Spin.show();
         this.btnloading = true;
         this.filePaths.map(item => {
-          let arr = item.split('/');
+          let arr = this.platform === 'win32' ? item.split('\\') : item.split('/');
           let fileName = arr[arr.length - 1].split('.')[0];
           let t = generatePng2(item).then(psd => {
+            console.log(this);
             this.finishCount += 1;
             this.finishPath.push(item);
             return psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
