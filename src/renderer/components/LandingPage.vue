@@ -17,7 +17,7 @@
             <i-button class="alt" type="primary"
                       :loading="btnloading"
                       :disabled="!btnEnable" @click="producePsd">生成</i-button>
-<!--            <span class="desc">{{finishCount}}</span>-->
+            <span class="desc">{{finishCount}}</span>
           </li>
           <!--<li>-->
             <!--<i-button class="alt" disabled type="error" @click="terminate">停止</i-button>-->
@@ -43,6 +43,7 @@
 <script>
   import {generatePng2} from '../psd';
   const path = require('path');
+  const Async = require('async');
   export default {
     name: 'landing-page',
     data () {
@@ -74,26 +75,43 @@
       producePsd () {
         this.finishPath = [];
         this.finishCount = 0;
-        let tasks = [];
-        this.$Spin.show();
+        // let tasks = [];
+        // this.$Spin.show();
         this.btnloading = true;
-        this.filePaths.map(item => {
+        // this.filePaths.map(item => {
+        //   let arr = this.platform === 'win32' ? item.split('\\') : item.split('/');
+        //   let fileName = arr[arr.length - 1].split('.')[0];
+        //   let t = generatePng2(item).then(psd => {
+        //     psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
+        //     psd = null;
+        //   }).then(() => {
+        //     this.finishCount += 1;
+        //     this.finishPath.push(item);
+        //   });
+        //   tasks.push(t);
+        // });
+        //
+        // Promise.all(tasks).then(() => {
+        //   // this.$Spin.hide();
+        //   this.btnloading = false;
+        // });
+        //
+        Async.eachSeries(this.filePaths, (item, callback) => {
+          console.log(item);
           let arr = this.platform === 'win32' ? item.split('\\') : item.split('/');
           let fileName = arr[arr.length - 1].split('.')[0];
-          let t = generatePng2(item).then(psd => {
-            console.log(this);
+          generatePng2(item).then(psd => {
+            psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
+            psd = null;
+          }).then(() => {
             this.finishCount += 1;
             this.finishPath.push(item);
-            return psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
-          }).then(() => {
+            callback();
           });
-          tasks.push(t);
+        }, err => {
+          console.log(err);
         });
-
-        Promise.all(tasks).then(() => {
-          this.$Spin.hide();
-          this.btnloading = false;
-        });
+        this.btnloading = false;
       },
       openSaveDialog () {
         this.$electron.ipcRenderer.send('open-directory-dialog', {
