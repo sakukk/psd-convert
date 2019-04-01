@@ -75,27 +75,7 @@
       producePsd () {
         this.finishPath = [];
         this.finishCount = 0;
-        // let tasks = [];
-        // this.$Spin.show();
         this.btnloading = true;
-        // this.filePaths.map(item => {
-        //   let arr = this.platform === 'win32' ? item.split('\\') : item.split('/');
-        //   let fileName = arr[arr.length - 1].split('.')[0];
-        //   let t = generatePng2(item).then(psd => {
-        //     psd.image.saveAsPng(path.join(this.savePath, `${fileName}.png`));
-        //     psd = null;
-        //   }).then(() => {
-        //     this.finishCount += 1;
-        //     this.finishPath.push(item);
-        //   });
-        //   tasks.push(t);
-        // });
-        //
-        // Promise.all(tasks).then(() => {
-        //   // this.$Spin.hide();
-        //   this.btnloading = false;
-        // });
-        //
         Async.eachSeries(this.filePaths, (item, callback) => {
           console.log(item);
           let arr = this.platform === 'win32' ? item.split('\\') : item.split('/');
