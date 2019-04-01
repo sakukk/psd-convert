@@ -17,7 +17,7 @@
             <i-button class="alt" type="primary"
                       :loading="btnloading"
                       :disabled="!btnEnable" @click="producePsd">生成</i-button>
-            <span class="desc">{{finishCount}}</span>
+            <span class="desc">{{finishCount}} / {{filePaths.length}}</span>
           </li>
           <!--<li>-->
             <!--<i-button class="alt" disabled type="error" @click="terminate">停止</i-button>-->
@@ -77,7 +77,6 @@
         this.finishCount = 0;
         this.btnloading = true;
         Async.eachSeries(this.filePaths, (item, callback) => {
-          console.log(item);
           let arr = this.platform === 'win32' ? item.split('\\') : item.split('/');
           let fileName = arr[arr.length - 1].split('.')[0];
           generatePng2(item).then(psd => {
