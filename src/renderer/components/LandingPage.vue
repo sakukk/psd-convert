@@ -4,7 +4,12 @@
       <Content :style="{margin: '20px', background: '#fff', minHeight: '100%'}">
         <ul class="btn-ul">
           <li>
-            <i-button class="alt" :loading="btnloading" @click="openDialog">选择文件夹</i-button>
+            <Dropdown @on-click="handleDropdownClick">
+              <i-button class="alt" type="primary" :loading="btnloading" @click="openDialog">选择文件</i-button>
+              <DropdownMenu slot="list">
+                <DropdownItem name="directory">选择文件夹</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
             <span class="desc">选择了{{fileNum}}个文件</span>
           </li>
           <li>
@@ -44,6 +49,7 @@
   import {generatePng2} from '../psd';
   const path = require('path');
   const Async = require('async');
+  const fs = require('fs');
   export default {
     name: 'landing-page',
     data () {
@@ -62,7 +68,7 @@
         this.finishPath = [];
         this.finishCount = 0;
         this.$electron.ipcRenderer.send('open-directory-dialog', {
-          properties: ['openFile', 'multiSelections'],
+          properties: ['openFile', 'multiSelections', 'createDirectory'], // , 'openDirectory'
           filters: [{
             name: 'Images',
             extensions: ['*.psd']
@@ -106,6 +112,29 @@
       },
       openFilePath () {
         this.$electron.ipcRenderer.send('open-file', this.savePath);
+      },
+      handleDropdownClick (name) {
+        if (name === 'directory') {
+          this.openDirectory();
+        }
+      },
+      openDirectory () {
+        this.filePaths = [];
+        this.finishPath = [];
+        this.finishCount = 0;
+        this.$electron.ipcRenderer.send('open-directory-dialog', {
+          properties: ['openDirectory', 'createDirectory'],
+          filters: [{
+            name: 'Images',
+            extensions: ['*.psd']
+          }]
+        });
+        this.$electron.ipcRenderer.once('selectItems', (event, path) => {
+          let _path = path[0];
+          if (fs.statSync(_path).isDirectory()) {
+            this.filePaths = _path;
+          }
+        });
       }
     },
     created () {
