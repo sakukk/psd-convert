@@ -6,9 +6,9 @@
           <li>
             <Dropdown @on-click="handleDropdownClick">
               <i-button class="alt" type="primary" :loading="btnloading" @click="openDialog">选择文件</i-button>
-              <DropdownMenu slot="list">
-                <DropdownItem name="directory">选择文件夹</DropdownItem>
-              </DropdownMenu>
+              <!--<DropdownMenu slot="list">-->
+                <!--<DropdownItem name="directory">选择文件夹</DropdownItem>-->
+              <!--</DropdownMenu>-->
             </Dropdown>
             <span class="desc">选择了{{fileNum}}个文件</span>
           </li>
