@@ -6,9 +6,10 @@
           <li>
             <Dropdown @on-click="handleDropdownClick">
               <i-button class="alt" type="primary" :loading="btnloading" @click="openDialog">选择文件</i-button>
-              <!--<DropdownMenu slot="list">-->
-                <!--<DropdownItem name="directory">选择文件夹</DropdownItem>-->
-              <!--</DropdownMenu>-->
+              <DropdownMenu slot="list">
+                <DropdownItem name="file">选择文件</DropdownItem>
+                <DropdownItem name="directory">选择文件夹</DropdownItem>
+              </DropdownMenu>
             </Dropdown>
             <span class="desc">选择了{{fileNum}}个文件</span>
           </li>
@@ -30,7 +31,7 @@
           <!--</li>-->
         </ul>
         <Divider />
-        <Progress :percent="progress" status="active" />
+        <Progress :percent="progress"/>
         <Divider />
         <div class="main-content">
           <ul class="file-ul">
@@ -47,6 +48,7 @@
 
 <script>
   import {generatePng2} from '../psd';
+  import {readFileList} from '../file';
   const path = require('path');
   const Async = require('async');
   const fs = require('fs');
@@ -118,6 +120,8 @@
       handleDropdownClick (name) {
         if (name === 'directory') {
           this.openDirectory();
+        } else {
+          this.openDialog();
         }
       },
       openDirectory () {
@@ -134,7 +138,24 @@
         this.$electron.ipcRenderer.once('selectItems', (event, path) => {
           let _path = path[0];
           if (fs.statSync(_path).isDirectory()) {
-            this.filePaths = _path;
+            this.$Spin.show({
+              render: (h) => {
+                return h('div', [
+                  h('Icon', {
+                    'class': 'demo-spin-icon-load',
+                    props: {
+                      type: 'ios-loading',
+                      size: 18
+                    }
+                  }),
+                  h('div', '正在努力获取所有文件')
+                ]);
+              }
+            });
+            this.filePaths = readFileList(_path);
+            this.$Spin.hide();
+          } else {
+            this.$Message.error('选择的不是文件夹');
           }
         });
       }
