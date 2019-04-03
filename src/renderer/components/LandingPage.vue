@@ -6,6 +6,7 @@
           <li>
             <Dropdown @on-click="handleDropdownClick">
               <i-button class="alt" type="primary" :loading="btnloading" @click="openDialog">选择文件</i-button>
+              <Icon type="ios-arrow-down"></Icon>
               <DropdownMenu slot="list">
                 <DropdownItem name="file">选择文件</DropdownItem>
                 <DropdownItem name="directory">选择文件夹</DropdownItem>
