@@ -81,8 +81,8 @@
       producePsd () {
         this.finishPath = [];
         this.finishCount = 0;
-        this.btnloading = true;
         Async.eachSeries(this.filePaths, (item, callback) => {
+          this.btnloading = true;
           let arr = this.platform === 'win32' ? item.split('\\') : item.split('/');
           let fileName = arr[arr.length - 1].split('.')[0];
           generatePng2(item).then(psd => {
@@ -92,11 +92,13 @@
             this.finishCount += 1;
             this.finishPath.push(item);
             callback();
+            if (this.finishCount === this.filePaths.length) {
+              this.btnloading = false;
+            }
           });
         }, err => {
           console.log(err);
         });
-        this.btnloading = false;
       },
       openSaveDialog () {
         this.$electron.ipcRenderer.send('open-directory-dialog', {
